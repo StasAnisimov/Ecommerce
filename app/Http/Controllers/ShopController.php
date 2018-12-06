@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use App\Product;
 class ShopController extends Controller
 {
     /**
@@ -13,7 +13,8 @@ class ShopController extends Controller
      */
     public function index()
     {
-        //
+        $products = Product::inRandomOrder(12)->take(12)->get();
+        return view('shop')->with('products',$products);
     }
 
     /**
@@ -43,9 +44,12 @@ class ShopController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($slug)
     {
-        //
+        $product = Product::where('slug',$slug)->firstOrFail();
+
+        return view('product')->with('product',$product);
+
     }
 
     /**
