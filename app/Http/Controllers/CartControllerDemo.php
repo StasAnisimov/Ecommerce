@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Gloudemans\Shoppingcart\Facades\Cart;
 use App\Product;
-class ShopController extends Controller
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+
+class CartControllerDemo extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -13,8 +16,9 @@ class ShopController extends Controller
      */
     public function index()
     {
-        $products = Product::inRandomOrder(12)->take(12)->get();
-        return view('shop')->with('products',$products);
+        $mightAlsoLike = Product::inRandomOrder()->take(4)->get();
+
+        return view('cart',compact('mightAlsoLike', $mightAlsoLike));
     }
 
     /**
@@ -33,9 +37,11 @@ class ShopController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Product $product)
     {
-        //
+        Cart::add($product->id, $product->name , 1, $product->price)
+            ->associate('App\Product');
+        return redirect()->route('cart.index')->with('success_message', 'Item was added to your cart!');
     }
 
     /**
@@ -44,17 +50,9 @@ class ShopController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($slug)
+    public function show($id)
     {
-        $product = Product::where('slug',$slug)->firstOrFail();
-        $mightAlsoLike = Product::where('slug','!=',$slug)->inRandomOrder()->take(4)->get();
-
-        return view('product')->with([
-            'product'=> $product,
-            'mightAlsoLike' => $mightAlsoLike
-            ]
-        );
-
+        //
     }
 
     /**
@@ -88,6 +86,16 @@ class ShopController extends Controller
      */
     public function destroy($id)
     {
-        //
+        Cart::remove($id);
+
+        return back()->with('success_message' , 'Item has been removed');
+    }
+    public function switchToSaveForLater($id)  {
+        $item = Cart::get($id);
+        Cart::remove($id);
+        Cart::instance('saveForLater')->add($item->id, $item->name, 1, $item->price )
+            ->associate('App\Product');
+        return redirect()->route('cart.index')->with('success_message', 'Item has been Saved For Later!');
+    
     }
 }
