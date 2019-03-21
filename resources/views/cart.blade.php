@@ -7,7 +7,7 @@
 @endif
 
 @foreach(Cart::content() as $item)
-<p>{{$item->price}}</p>
+<p>{{$item->model->presentPrice()}}</p>
 <p>{{$item->name}}</p>
 <img src="{{ asset('images/'.$item->model->slug.'.jpg') }}" alt="">
 <form action="{{ route('cart.destroy', $item->rowId) }}" method="POST">
@@ -15,14 +15,15 @@
 {{method_field('DELETE')}}
 <button type="submit">Удалить товар</button>
 </form>
-
 @endforeach
-@if (Cart::instance('saveForLater')->count() > 0) 
-<h2>{{Cart::instance('saveForLater')->count()}} товар(ов) сохранено на позже</h2>
-@else
-<h2>У вас нет сохраненных на позже товаров</h2>
-@endif
+<h3>{{ presentPrice(Cart::subtotal()) }}</h3>
+<h3>{{ presentPrice(Cart::tax(2,'.',','))  }}</h3>
+<h3>{{ presentPrice(Cart::total()) }}</h3>
+<a href="{{route('checkout.index')}}" class="button">Оформить заказ</a>
+<a href="{{route('shop.index')}}" class="button-primary">Продолжить покупки</a>
 
- 
+<div>
+
+</div>
 
 @include('partials.might-like')
