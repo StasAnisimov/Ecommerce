@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Gloudemans\Shoppingcart\Facades\Cart;
 use App\Product;
 use Illuminate\Support\Facades\Validator;
@@ -38,7 +39,7 @@ class CartController extends Controller
      */
     public function store(Request $request)
     {
-        Cart::add($request->id, $request->name , 1, $request->price)
+        Cart::add($request->id, $request->name , 1 , $request->price)
             ->associate('App\Product');
         return redirect()->route('cart.index')->with('success_message', 'Item was added to your cart!');
     }
@@ -72,9 +73,25 @@ class CartController extends Controller
      * @param  \App\Cart  $cart
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Cart $cart)
+    public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'quantity' => 'required|numeric|between:1,5'
+        ]);
+        Cart::update($id , $request->quantity);
+        session()->flash('success_message', 'Quantity was updated successfully!');
+        return response()->json(['success' => true]);
+        if ($validator->fails()) {
+            session()->flash('errors', collect(['Quantity must be between 1 and 5.']));
+            return response()->json(['success' => false], 400);
+        }
+        if ($request->quantity > $request->productQuantity) {
+            session()->flash('errors', collect(['We currently do not have enough items in stock.']));
+            return response()->json(['success' => false], 400);
+        }
+        
+       
+
     }
 
     /**
